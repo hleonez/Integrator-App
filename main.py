@@ -1,11 +1,10 @@
 """Main entry point for Integrator App."""
-import customtkinter as ctk
-from ui.base_view import BaseView
+from ui.home_view import HomeView
 
 
 def main():
     """Launch the application."""
-    app = BaseView()
+    app = HomeView()
     app.mainloop()
 
 
