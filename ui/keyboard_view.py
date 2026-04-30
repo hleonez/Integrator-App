@@ -1,29 +1,40 @@
 """Keyboard view - Virtual mathematical keyboard for inputting functions."""
 import customtkinter as ctk
-from ui.base_view import BaseView
 
 
-class KeyboardView(BaseView):
-    """Virtual keyboard for mathematical functions."""
+class KeyboardView(ctk.CTkToplevel):
+    """Virtual keyboard for mathematical functions.
     
-    def __init__(self, input_widget=None, callback=None):
+    Uses CTkToplevel instead of inheriting BaseView so it behaves as a
+    secondary floating window, avoiding geometry manager conflicts with
+    the parent window's grid layout.
+    """
+    
+    def __init__(self, parent=None, input_widget=None, callback=None):
         """Initialize keyboard view.
         
         Args:
+            parent: The parent window (CTk instance)
             input_widget: The CTkTextbox or CTkEntry to insert text into
             callback: Optional callback function to call when text is inserted
         """
+        super().__init__(parent)
+        
         self.input_widget = input_widget
         self.callback = callback
         self.current_tab = "basic"
         
-        super().__init__()
-        
-        # Configure window for keyboard
+        # Configure window
         self.title("Math Keyboard")
         self.geometry("700x550")
+        self.resizable(True, True)
         
-        # Create main container
+        # Keep on top of parent
+        self.transient(parent)
+        self.lift()
+        self.focus_force()
+        
+        # Create main container — pack is safe here, CTkToplevel has no pre-existing slaves
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.main_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
@@ -36,7 +47,7 @@ class KeyboardView(BaseView):
         tab_names = ["Basic", "Funciones", "Trig", "Constantes", "Avanzado"]
         tab_keys = ["basic", "funciones", "trig", "constantes", "avanzado"]
         
-        for i, (name, key) in enumerate(zip(tab_names, tab_keys)):
+        for name, key in zip(tab_names, tab_keys):
             btn = ctk.CTkButton(
                 self.tab_frame,
                 text=name,
@@ -63,7 +74,6 @@ class KeyboardView(BaseView):
     
     def switch_tab(self, tab_key):
         """Switch to a different keyboard tab."""
-        # Update tab button colors
         for key, btn in self.tabs.items():
             if key == tab_key:
                 btn.configure(fg_color=("#3B8ED5", "#1F6AA5"))
@@ -75,11 +85,9 @@ class KeyboardView(BaseView):
     
     def show_keyboard(self, tab_key):
         """Show the keyboard for the specified tab."""
-        # Clear existing buttons
         for widget in self.keyboard_frame.winfo_children():
             widget.destroy()
         
-        # Create buttons based on tab
         if tab_key == "basic":
             self.create_basic_keyboard()
         elif tab_key == "funciones":
@@ -94,13 +102,9 @@ class KeyboardView(BaseView):
     def insert_text(self, text):
         """Insert text into the input widget."""
         if self.input_widget:
-            # Get current position
             try:
-                current = self.input_widget.get("0.0", "end").rstrip()
                 self.input_widget.insert("end", text)
-            except:
-                # For CTkEntry
-                current = self.input_widget.get()
+            except Exception:
                 self.input_widget.insert("end", text)
         
         if self.callback:
@@ -124,7 +128,6 @@ class KeyboardView(BaseView):
     
     def create_basic_keyboard(self):
         """Create BASIC tab keyboard."""
-        # Numbers row
         numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -132,7 +135,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, num, num, width=55, height=45)
             btn.pack(side="left", padx=2)
         
-        # Operators row
         operators = [("+", "+"), ("-", "-"), ("*", "*"), ("/", "/"), ("^", "**")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -140,7 +142,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=55, height=45)
             btn.pack(side="left", padx=2)
         
-        # Grouping row
         grouping = [("(", "("), (")", ")"), (".", ".")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -148,7 +149,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=55, height=45)
             btn.pack(side="left", padx=2)
         
-        # Powers row
         powers = [("x²", "**2"), ("x³", "**3"), ("xⁿ", "**"), ("√", "sqrt("), ("ⁿ√", "root(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -156,7 +156,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=80, height=45)
             btn.pack(side="left", padx=2)
         
-        # Other useful row
         others = [("|x|", "abs("), ("1/x", "1/()"), ("=", "=")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -164,7 +163,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=80, height=45)
             btn.pack(side="left", padx=2)
         
-        # Variable x
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
         btn = self.create_button(row, "x", "x", width=80, height=45)
@@ -174,7 +172,6 @@ class KeyboardView(BaseView):
     
     def create_funciones_keyboard(self):
         """Create FUNCIONES tab keyboard."""
-        # Functions row 1
         funcs1 = [("ln", "log("), ("log", "log10("), ("exp", "exp(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -182,7 +179,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=50)
             btn.pack(side="left", padx=3)
         
-        # Functions row 2
         funcs2 = [("e^x", "exp("), ("log₂", "log2("), ("10^x", "10**")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -190,7 +186,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=50)
             btn.pack(side="left", padx=3)
         
-        # Clear button
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=10)
         btn = ctk.CTkButton(
@@ -207,7 +202,6 @@ class KeyboardView(BaseView):
     
     def create_trig_keyboard(self):
         """Create TRIGONOMETRÍA tab keyboard."""
-        # Basic trig row
         trig1 = [("sin", "sin("), ("cos", "cos("), ("tan", "tan(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -215,7 +209,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=50)
             btn.pack(side="left", padx=3)
         
-        # Inverse trig row
         trig2 = [("arcsin", "asin("), ("arccos", "acos("), ("arctan", "atan(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -223,7 +216,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=50)
             btn.pack(side="left", padx=3)
         
-        # Other trig row
         trig3 = [("cot", "cot("), ("sec", "sec("), ("csc", "csc(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -231,7 +223,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=50)
             btn.pack(side="left", padx=3)
         
-        # Hyperbolic row
         hyper = [("sinh", "sinh("), ("cosh", "cosh("), ("tanh", "tanh(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -241,7 +232,6 @@ class KeyboardView(BaseView):
     
     def create_constantes_keyboard(self):
         """Create CONSTANTES tab keyboard."""
-        # Constants row 1
         const1 = [("π", "pi"), ("e", "E"), ("∞", "inf")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -249,7 +239,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=60)
             btn.pack(side="left", padx=3)
         
-        # More constants row
         const2 = [("i", "1j"), ("φ", "(1+sqrt(5))/2")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -257,7 +246,6 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=60)
             btn.pack(side="left", padx=3)
         
-        # Euler's number as function
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=10)
         btn = self.create_button(row, "E (euler)", "E", width=150, height=50)
@@ -265,7 +253,6 @@ class KeyboardView(BaseView):
     
     def create_avanzado_keyboard(self):
         """Create AVANZADO tab keyboard."""
-        # Operators row
         ops = [("Σ", "sum("), ("∏", "prod("), ("∫", "integrate(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -273,13 +260,11 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=50)
             btn.pack(side="left", padx=3)
         
-        # Limit row
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
         btn = self.create_button(row, "lim", "limit(", width=150, height=50)
         btn.pack(side="left", padx=3)
         
-        # Other advanced row
         others = [("n!", "factorial("), ("floor", "floor("), ("ceil", "ceil(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -287,13 +272,11 @@ class KeyboardView(BaseView):
             btn = self.create_button(row, text, insert, width=100, height=50)
             btn.pack(side="left", padx=3)
         
-        # Derivative row
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
         btn = self.create_button(row, "d/dx", "diff(", width=150, height=50)
         btn.pack(side="left", padx=3)
         
-        # Percentage
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
         btn = self.create_button(row, "%", "%", width=80, height=50)
@@ -304,5 +287,5 @@ class KeyboardView(BaseView):
         if self.input_widget:
             try:
                 self.input_widget.delete("0.0", "end")
-            except:
+            except Exception:
                 self.input_widget.delete(0, "end")
