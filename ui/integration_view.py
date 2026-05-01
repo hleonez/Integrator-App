@@ -16,6 +16,10 @@ from core.riemann import riemann
 from core.trapezoidal import trapezoidal
 from core.simpson import simpson
 from core.boole import boole
+from core.punto_medio import midpoint
+from core.cuadratura_gauss import gauss_quadrature_2
+from core.romberg import romberg
+from visualization.plotter import plot_integral_window
 
 
 # ---------------------------------------------------------------------------
@@ -43,6 +47,21 @@ METHODS = {
         "n_constraint": "múltiplo de 4 ≥ 4",
         "n_default": "100",
     },
+    "Método de Punto Medio": {
+        "function": midpoint,
+        "n_constraint": "cualquier entero ≥ 1",
+        "n_default": "100",
+    },
+    "Cuadratura de Gauss (2 puntos)": {
+        "function": gauss_quadrature_2,
+        "n_constraint": "no aplica",
+        "n_default": "- - -",
+    },
+    "Método de Romberg": {
+        "function": romberg,
+        "n_constraint": "ITERACIONES ≥ 1",
+        "n_default": "5",
+    },
 }
 
 # Safe math symbols available when evaluating user-typed functions
@@ -64,7 +83,7 @@ class IntegrationView(BaseView):
         self._build_header()
         self._build_method_selector()
         self._build_inputs()
-        self._build_calculate_button()
+        self._build_action_buttons()
         self._build_result_panel()
 
     # ------------------------------------------------------------------
@@ -170,12 +189,15 @@ class IntegrationView(BaseView):
             else:
                 self.n_entry = entry
 
-    def _build_calculate_button(self) -> None:
-        """Primary action button."""
+    def _build_action_buttons(self) -> None:
+        """Primary action buttons: Calculate and Graph."""
+        self.buttons_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.buttons_frame.place(relx=0.5, rely=0.75, anchor="center")
+        
         self.calculate_button = ctk.CTkButton(
-            self,
+            self.buttons_frame,
             text="Calcular Integral",
-            width=220,
+            width=200,
             height=48,
             corner_radius=24,
             font=ctk.CTkFont(size=17, weight="bold"),
@@ -183,7 +205,20 @@ class IntegrationView(BaseView):
             hover_color=("#4A9FE8", "#2A7AB5"),
             command=self._calculate,
         )
-        self.calculate_button.place(relx=0.5, rely=0.75, anchor="center")
+        self.calculate_button.pack(side="left", padx=10)
+
+        self.graph_button = ctk.CTkButton(
+            self.buttons_frame,
+            text="Gráfica 📈",
+            width=160,
+            height=48,
+            corner_radius=24,
+            font=ctk.CTkFont(size=17, weight="bold"),
+            fg_color=("#10B981", "#059669"),
+            hover_color=("#34D399", "#10B981"),
+            command=self._graph_function,
+        )
+        self.graph_button.pack(side="left", padx=10)
 
     def _build_result_panel(self) -> None:
         """Panel that displays the numerical result or error messages."""
@@ -206,6 +241,16 @@ class IntegrationView(BaseView):
         """Update the n-constraint hint when the user picks a different method."""
         constraint = METHODS[selected_method]["n_constraint"]
         self.constraint_label.configure(text=f"n: {constraint}")
+        
+        if selected_method == "Cuadratura de Gauss (2 puntos)":
+            self.n_entry.delete(0, "end")
+            self.n_entry.insert(0, "- - -")
+            self.n_entry.configure(state="disabled")
+        else:
+            self.n_entry.configure(state="normal")
+            if self.n_entry.get() == "- - -":
+                self.n_entry.delete(0, "end")
+                self.n_entry.insert(0, METHODS[selected_method]["n_default"])
 
     def _open_keyboard(self) -> None:
         """Open the virtual math keyboard targeting the function entry."""
@@ -218,18 +263,39 @@ class IntegrationView(BaseView):
             f = self._parse_function(self.function_entry.get().strip())
             a = self._parse_float(self.a_entry.get().strip(), "a")
             b = self._parse_float(self.b_entry.get().strip(), "b")
-            n = self._parse_int(self.n_entry.get().strip(), "n")
 
             if a >= b:
                 raise ValueError("El límite inferior a debe ser menor que b.")
 
-            method_config = METHODS[self.method_var.get()]
+            method_name = self.method_var.get()
+            method_config = METHODS[method_name]
             integrate = method_config["function"]
-            result = integrate(f, a, b, n)
+            
+            if method_name == "Cuadratura de Gauss (2 puntos)":
+                result = integrate(f, a, b)
+            else:
+                n = self._parse_int(self.n_entry.get().strip(), "n")
+                result = integrate(f, a, b, n)
 
             self._show_result(result)
 
-        except (ValueError, SympifyError, ZeroDivisionError) as error:
+        except (ValueError, SympifyError, ZeroDivisionError, TypeError) as error:
+            self._show_error(str(error))
+
+    def _graph_function(self) -> None:
+        """Parse inputs and open the graphing window."""
+        try:
+            expr_str = self.function_entry.get().strip()
+            f = self._parse_function(expr_str)
+            a = self._parse_float(self.a_entry.get().strip(), "a")
+            b = self._parse_float(self.b_entry.get().strip(), "b")
+
+            if a >= b:
+                raise ValueError("El límite inferior a debe ser menor que b.")
+
+            plot_integral_window(self, f, a, b, expr_str)
+
+        except (ValueError, SympifyError, ZeroDivisionError, TypeError) as error:
             self._show_error(str(error))
 
     # ------------------------------------------------------------------
