@@ -19,6 +19,7 @@ from core.boole import boole
 from core.punto_medio import midpoint
 from core.cuadratura_gauss import gauss_quadrature_2
 from core.romberg import romberg
+from visualization.plotter import plot_integral_window
 
 
 # ---------------------------------------------------------------------------
@@ -82,7 +83,7 @@ class IntegrationView(BaseView):
         self._build_header()
         self._build_method_selector()
         self._build_inputs()
-        self._build_calculate_button()
+        self._build_action_buttons()
         self._build_result_panel()
 
     # ------------------------------------------------------------------
@@ -188,12 +189,15 @@ class IntegrationView(BaseView):
             else:
                 self.n_entry = entry
 
-    def _build_calculate_button(self) -> None:
-        """Primary action button."""
+    def _build_action_buttons(self) -> None:
+        """Primary action buttons: Calculate and Graph."""
+        self.buttons_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.buttons_frame.place(relx=0.5, rely=0.75, anchor="center")
+        
         self.calculate_button = ctk.CTkButton(
-            self,
+            self.buttons_frame,
             text="Calcular Integral",
-            width=220,
+            width=200,
             height=48,
             corner_radius=24,
             font=ctk.CTkFont(size=17, weight="bold"),
@@ -201,7 +205,20 @@ class IntegrationView(BaseView):
             hover_color=("#4A9FE8", "#2A7AB5"),
             command=self._calculate,
         )
-        self.calculate_button.place(relx=0.5, rely=0.75, anchor="center")
+        self.calculate_button.pack(side="left", padx=10)
+
+        self.graph_button = ctk.CTkButton(
+            self.buttons_frame,
+            text="Gráfica 📈",
+            width=160,
+            height=48,
+            corner_radius=24,
+            font=ctk.CTkFont(size=17, weight="bold"),
+            fg_color=("#10B981", "#059669"),
+            hover_color=("#34D399", "#10B981"),
+            command=self._graph_function,
+        )
+        self.graph_button.pack(side="left", padx=10)
 
     def _build_result_panel(self) -> None:
         """Panel that displays the numerical result or error messages."""
@@ -261,6 +278,22 @@ class IntegrationView(BaseView):
                 result = integrate(f, a, b, n)
 
             self._show_result(result)
+
+        except (ValueError, SympifyError, ZeroDivisionError, TypeError) as error:
+            self._show_error(str(error))
+
+    def _graph_function(self) -> None:
+        """Parse inputs and open the graphing window."""
+        try:
+            expr_str = self.function_entry.get().strip()
+            f = self._parse_function(expr_str)
+            a = self._parse_float(self.a_entry.get().strip(), "a")
+            b = self._parse_float(self.b_entry.get().strip(), "b")
+
+            if a >= b:
+                raise ValueError("El límite inferior a debe ser menor que b.")
+
+            plot_integral_window(self, f, a, b, expr_str)
 
         except (ValueError, SympifyError, ZeroDivisionError, TypeError) as error:
             self._show_error(str(error))
