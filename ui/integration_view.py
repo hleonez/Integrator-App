@@ -16,6 +16,9 @@ from core.riemann import riemann
 from core.trapezoidal import trapezoidal
 from core.simpson import simpson
 from core.boole import boole
+from core.punto_medio import midpoint
+from core.cuadratura_gauss import gauss_quadrature_2
+from core.romberg import romberg
 
 
 # ---------------------------------------------------------------------------
@@ -42,6 +45,21 @@ METHODS = {
         "function": boole,
         "n_constraint": "múltiplo de 4 ≥ 4",
         "n_default": "100",
+    },
+    "Método de Punto Medio": {
+        "function": midpoint,
+        "n_constraint": "cualquier entero ≥ 1",
+        "n_default": "100",
+    },
+    "Cuadratura de Gauss (2 puntos)": {
+        "function": gauss_quadrature_2,
+        "n_constraint": "no aplica",
+        "n_default": "- - -",
+    },
+    "Método de Romberg": {
+        "function": romberg,
+        "n_constraint": "ITERACIONES ≥ 1",
+        "n_default": "5",
     },
 }
 
@@ -206,6 +224,16 @@ class IntegrationView(BaseView):
         """Update the n-constraint hint when the user picks a different method."""
         constraint = METHODS[selected_method]["n_constraint"]
         self.constraint_label.configure(text=f"n: {constraint}")
+        
+        if selected_method == "Cuadratura de Gauss (2 puntos)":
+            self.n_entry.delete(0, "end")
+            self.n_entry.insert(0, "- - -")
+            self.n_entry.configure(state="disabled")
+        else:
+            self.n_entry.configure(state="normal")
+            if self.n_entry.get() == "- - -":
+                self.n_entry.delete(0, "end")
+                self.n_entry.insert(0, METHODS[selected_method]["n_default"])
 
     def _open_keyboard(self) -> None:
         """Open the virtual math keyboard targeting the function entry."""
@@ -218,18 +246,23 @@ class IntegrationView(BaseView):
             f = self._parse_function(self.function_entry.get().strip())
             a = self._parse_float(self.a_entry.get().strip(), "a")
             b = self._parse_float(self.b_entry.get().strip(), "b")
-            n = self._parse_int(self.n_entry.get().strip(), "n")
 
             if a >= b:
                 raise ValueError("El límite inferior a debe ser menor que b.")
 
-            method_config = METHODS[self.method_var.get()]
+            method_name = self.method_var.get()
+            method_config = METHODS[method_name]
             integrate = method_config["function"]
-            result = integrate(f, a, b, n)
+            
+            if method_name == "Cuadratura de Gauss (2 puntos)":
+                result = integrate(f, a, b)
+            else:
+                n = self._parse_int(self.n_entry.get().strip(), "n")
+                result = integrate(f, a, b, n)
 
             self._show_result(result)
 
-        except (ValueError, SympifyError, ZeroDivisionError) as error:
+        except (ValueError, SympifyError, ZeroDivisionError, TypeError) as error:
             self._show_error(str(error))
 
     # ------------------------------------------------------------------
