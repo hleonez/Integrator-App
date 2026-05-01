@@ -1,9 +1,10 @@
-"""Main entry point for Integrator App."""
+import customtkinter as ctk
 from ui.home_view import HomeView
 
-
 def main():
-    """Launch the application."""
+    ctk.set_appearance_mode("dark") 
+    ctk.set_default_color_theme("blue")  
+
     app = HomeView()
     app.mainloop()
 
