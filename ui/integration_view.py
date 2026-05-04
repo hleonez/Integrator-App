@@ -1,10 +1,10 @@
-"""Integration view - UI for numerical integration methods.
+"""Vista de integración - Interfaz para métodos de integración numérica.
 
-Provides a single view where the user can:
-  - Type a mathematical function of x.
-  - Set the integration interval [a, b] and number of subintervals n.
-  - Choose between Riemann, Trapezoidal, Simpson, or Boole.
-  - See the numerical result immediately.
+Proporciona una vista única donde el usuario puede:
+  - Escribir una función matemática de x.
+  - Establecer el intervalo de integración [a, b] y el número de subintervalos n.
+  - Elegir entre Riemann, Trapezoidal, Simpson o Boole.
+  - Ver el resultado numérico inmediatamente.
 """
 
 import math
@@ -23,7 +23,7 @@ from visualization.plotter import plot_integral_window
 
 
 # ---------------------------------------------------------------------------
-# Constants
+# Constantes
 # ---------------------------------------------------------------------------
 
 METHODS = {
@@ -64,16 +64,16 @@ METHODS = {
     },
 }
 
-# Safe math symbols available when evaluating user-typed functions
+# Símbolos matemáticos seguros disponibles al evaluar funciones ingresadas por el usuario
 SAFE_MATH_NAMESPACE = {name: getattr(math, name) for name in dir(math) if not name.startswith("_")}
 
 
 # ---------------------------------------------------------------------------
-# View
+# Vista
 # ---------------------------------------------------------------------------
 
 class IntegrationView(BaseView):
-    """View for computing definite integrals with selectable numerical methods."""
+    """Vista para calcular integrales definidas con métodos numéricos seleccionables."""
 
     def __init__(self):
         super().__init__()
@@ -87,11 +87,11 @@ class IntegrationView(BaseView):
         self._build_result_panel()
 
     # ------------------------------------------------------------------
-    # UI construction helpers
+    # Funciones auxiliares para la construcción de la interfaz
     # ------------------------------------------------------------------
 
     def _build_header(self) -> None:
-        """Title and subtitle at the top of the view."""
+        """Título y subtítulo en la parte superior de la vista."""
         self.header_label = ctk.CTkLabel(
             self,
             text="Integración Numérica",
@@ -108,7 +108,7 @@ class IntegrationView(BaseView):
         self.subtitle_label.place(relx=0.5, rely=0.13, anchor="center")
 
     def _build_method_selector(self) -> None:
-        """Dropdown to choose the integration method."""
+        """Menú desplegable para elegir el método de integración."""
         self.method_label = ctk.CTkLabel(
             self,
             text="Método:",
@@ -137,7 +137,7 @@ class IntegrationView(BaseView):
         self.constraint_label.place(relx=0.08, rely=0.34, anchor="w")
 
     def _build_inputs(self) -> None:
-        """Input fields for f(x), a, b, and n."""
+        """Campos de entrada para f(x), a, b, y n."""
         # ── f(x) ──────────────────────────────────────────────────────
         self.function_label = ctk.CTkLabel(
             self,
@@ -169,7 +169,7 @@ class IntegrationView(BaseView):
         )
         self.keyboard_button.pack(side="left")
 
-        # ── Interval and n (in one row) ────────────────────────────────
+        # ── Intervalo y n (en una fila) ────────────────────────────────
         self.params_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.params_frame.place(relx=0.08, rely=0.60, anchor="w", relwidth=0.84)
 
@@ -181,7 +181,7 @@ class IntegrationView(BaseView):
             entry = ctk.CTkEntry(col, placeholder_text=placeholder, height=40, font=ctk.CTkFont(size=14, family="Consolas"))
             entry.pack(fill="x")
 
-            # Keep references
+            # Guardar referencias
             if "inferior" in label_text:
                 self.a_entry = entry
             elif "superior" in label_text:
@@ -190,7 +190,7 @@ class IntegrationView(BaseView):
                 self.n_entry = entry
 
     def _build_action_buttons(self) -> None:
-        """Primary action buttons: Calculate and Graph."""
+        """Botones de acción principales: Calcular y Graficar."""
         self.buttons_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.buttons_frame.place(relx=0.5, rely=0.75, anchor="center")
         
@@ -221,7 +221,7 @@ class IntegrationView(BaseView):
         self.graph_button.pack(side="left", padx=10)
 
     def _build_result_panel(self) -> None:
-        """Panel that displays the numerical result or error messages."""
+        """Panel que muestra el resultado numérico o los mensajes de error."""
         self.result_frame = ctk.CTkFrame(self, corner_radius=16)
         self.result_frame.place(relx=0.5, rely=0.88, anchor="center", relwidth=0.84, relheight=0.14)
 
@@ -234,11 +234,11 @@ class IntegrationView(BaseView):
         self.result_label.place(relx=0.5, rely=0.5, anchor="center")
 
     # ------------------------------------------------------------------
-    # Event handlers
+    # Manejadores de eventos
     # ------------------------------------------------------------------
 
     def _on_method_changed(self, selected_method: str) -> None:
-        """Update the n-constraint hint when the user picks a different method."""
+        """Actualizar la sugerencia de la restricción de n cuando el usuario elige un método diferente."""
         constraint = METHODS[selected_method]["n_constraint"]
         self.constraint_label.configure(text=f"n: {constraint}")
         
@@ -253,12 +253,12 @@ class IntegrationView(BaseView):
                 self.n_entry.insert(0, METHODS[selected_method]["n_default"])
 
     def _open_keyboard(self) -> None:
-        """Open the virtual math keyboard targeting the function entry."""
+        """Abrir el teclado matemático virtual para el campo de entrada de la función."""
         from ui.keyboard_view import KeyboardView
         KeyboardView(parent=self, input_widget=self.function_entry)
 
     def _calculate(self) -> None:
-        """Read inputs, run the selected integration method, and display the result."""
+        """Leer las entradas, ejecutar el método de integración seleccionado y mostrar el resultado."""
         try:
             f = self._parse_function(self.function_entry.get().strip())
             a = self._parse_float(self.a_entry.get().strip(), "a")
@@ -283,7 +283,7 @@ class IntegrationView(BaseView):
             self._show_error(str(error))
 
     def _graph_function(self) -> None:
-        """Parse inputs and open the graphing window."""
+        """Procesar las entradas y abrir la ventana de graficación."""
         try:
             expr_str = self.function_entry.get().strip()
             f = self._parse_function(expr_str)
@@ -299,20 +299,20 @@ class IntegrationView(BaseView):
             self._show_error(str(error))
 
     # ------------------------------------------------------------------
-    # Input parsing helpers
+    # Funciones auxiliares para procesar entradas
     # ------------------------------------------------------------------
 
     def _parse_function(self, expression: str):
-        """Parse a user-typed string into a callable f(x) using SymPy.
+        """Convierte una cadena de texto en una función f(x) evaluable usando SymPy.
 
         Args:
-            expression: Math expression as a string, e.g. 'x**2 + sin(x)'.
+            expression: Expresión matemática como cadena, ej. 'x**2 + sin(x)'.
 
         Returns:
-            A Python callable that evaluates the expression for a given x.
+            Una función de Python que evalúa la expresión para un x dado.
 
         Raises:
-            ValueError: If the expression is empty or cannot be parsed.
+            ValueError: Si la expresión está vacía o no se puede procesar.
         """
         if not expression:
             raise ValueError("Por favor ingresa una función f(x).")
@@ -326,7 +326,7 @@ class IntegrationView(BaseView):
         return lambdify(x, symbolic_expr, modules=["math"])
 
     def _parse_float(self, value: str, field_name: str) -> float:
-        """Convert a string to float, raising a descriptive error on failure."""
+        """Convertir una cadena a float, lanzando un error descriptivo si falla."""
         if not value:
             raise ValueError(f"El campo '{field_name}' está vacío.")
         try:
@@ -335,7 +335,7 @@ class IntegrationView(BaseView):
             raise ValueError(f"'{value}' no es un número válido para '{field_name}'.")
 
     def _parse_int(self, value: str, field_name: str) -> int:
-        """Convert a string to int, raising a descriptive error on failure."""
+        """Convertir una cadena a int, lanzando un error descriptivo si falla."""
         if not value:
             raise ValueError(f"El campo '{field_name}' está vacío.")
         try:
@@ -344,11 +344,11 @@ class IntegrationView(BaseView):
             raise ValueError(f"'{value}' no es un entero válido para '{field_name}'.")
 
     # ------------------------------------------------------------------
-    # Result display helpers
+    # Funciones auxiliares para mostrar resultados
     # ------------------------------------------------------------------
 
     def _show_result(self, value: float) -> None:
-        """Display the integration result in the result panel."""
+        """Mostrar el resultado de la integración en el panel de resultados."""
         method_name = self.method_var.get()
         text = f"∫f(x)dx ≈  {value:.10f}     [{method_name}]"
         self.result_label.configure(
@@ -358,7 +358,7 @@ class IntegrationView(BaseView):
         )
 
     def _show_error(self, message: str) -> None:
-        """Display an error message in the result panel."""
+        """Mostrar un mensaje de error en el panel de resultados."""
         self.result_label.configure(
             text=f"⚠ {message}",
             text_color=("#B91C1C", "#F87171"),

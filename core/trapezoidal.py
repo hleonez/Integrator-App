@@ -1,4 +1,4 @@
-"""Trapezoidal Rule integration method."""
+"""Método de integración de la Regla Trapezoidal."""
 
 from typing import Callable
 

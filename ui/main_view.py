@@ -1,7 +1,7 @@
-"""Main view - Entry point after the home screen.
+"""Vista principal - Punto de entrada después de la pantalla de inicio.
 
-Currently routes directly to the Integration view.
-Additional tools can be added here as navigation cards in the future.
+Actualmente redirige directamente a la vista de Integración.
+Se pueden agregar herramientas adicionales aquí como tarjetas de navegación en el futuro.
 """
 
 import customtkinter as ctk
@@ -9,7 +9,7 @@ from ui.base_view import BaseView
 
 
 class MainView(BaseView):
-    """Main hub view with navigation cards to each tool."""
+    """Vista del concentrador principal con tarjetas de navegación a cada herramienta."""
 
     def __init__(self):
         super().__init__()
@@ -35,6 +35,6 @@ class MainView(BaseView):
         self.integration_button.place(relx=0.5, rely=0.5, anchor="center")
 
     def _go_to_integration(self) -> None:
-        """Navigate to the numerical integration view."""
+        """Navegar a la vista de integración numérica."""
         from ui.integration_view import IntegrationView
         self.go_to_view(IntegrationView)

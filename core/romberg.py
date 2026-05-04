@@ -1,4 +1,4 @@
-"""Romberg Integration method."""
+"""Método de Integración de Romberg."""
 
 from typing import Callable
 

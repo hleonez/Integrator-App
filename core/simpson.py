@@ -1,4 +1,4 @@
-"""Simpson's Rule integration method."""
+"""Método de integración de la Regla de Simpson."""
 
 from typing import Callable
 

@@ -1,4 +1,4 @@
-"""Midpoint Rule integration method."""
+"""Método de integración de la Regla del Punto Medio."""
 
 from typing import Callable
 

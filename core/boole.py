@@ -1,4 +1,4 @@
-"""Boole's Rule integration method."""
+"""Método de integración de la Regla de Boole."""
 
 from typing import Callable
 
@@ -12,7 +12,7 @@ def boole(f: Function, a: float, b: float, n: int) -> float:
     boole_coefficients = [7, 32, 12, 32, 7]
     total = 0.0
 
-    # Iterate over each group of 4 subintervals
+    # Iterar sobre cada grupo de 4 subintervalos
     for group in range(n // 4):
         base_index = group * 4
         group_sum = sum(

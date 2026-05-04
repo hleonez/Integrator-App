@@ -1,22 +1,22 @@
-"""Keyboard view - Virtual mathematical keyboard for inputting functions."""
+"""Vista del teclado - Teclado matemático virtual para ingresar funciones."""
 import customtkinter as ctk
 
 
 class KeyboardView(ctk.CTkToplevel):
-    """Virtual keyboard for mathematical functions.
+    """Teclado virtual para funciones matemáticas.
     
-    Uses CTkToplevel instead of inheriting BaseView so it behaves as a
-    secondary floating window, avoiding geometry manager conflicts with
-    the parent window's grid layout.
+    Usa CTkToplevel en lugar de heredar BaseView para que se comporte como una
+    ventana flotante secundaria, evitando conflictos del administrador de geometría
+    con el diseño de cuadrícula de la ventana principal.
     """
     
     def __init__(self, parent=None, input_widget=None, callback=None):
-        """Initialize keyboard view.
+        """Inicializar la vista del teclado.
         
         Args:
-            parent: The parent window (CTk instance)
-            input_widget: The CTkTextbox or CTkEntry to insert text into
-            callback: Optional callback function to call when text is inserted
+            parent: La ventana principal (instancia de CTk)
+            input_widget: El CTkTextbox o CTkEntry donde se insertará el texto
+            callback: Función opcional a llamar cuando se inserta texto
         """
         super().__init__(parent)
         
@@ -24,27 +24,27 @@ class KeyboardView(ctk.CTkToplevel):
         self.callback = callback
         self.current_tab = "basic"
         
-        # Configure window
-        self.title("Math Keyboard")
+        # Configurar ventana
+        self.title("Teclado Matemático")
         self.geometry("700x550")
         self.resizable(True, True)
         
-        # Keep on top of parent
+        # Mantener por encima de la ventana principal
         self.transient(parent)
         self.lift()
         self.focus_force()
         
-        # Create main container — pack is safe here, CTkToplevel has no pre-existing slaves
+        # Crear contenedor principal — usar pack es seguro aquí, CTkToplevel no tiene elementos preexistentes
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.main_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # Create tab buttons frame
+        # Crear marco de botones de pestañas
         self.tab_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
         self.tab_frame.pack(fill="x", pady=(0, 10))
         
-        # Create tab buttons
+        # Crear botones de pestañas
         self.tabs = {}
-        tab_names = ["Basic", "Funciones", "Trig", "Constantes", "Avanzado"]
+        tab_names = ["Básico", "Funciones", "Trig", "Constantes", "Avanzado"]
         tab_keys = ["basic", "funciones", "trig", "constantes", "avanzado"]
         
         for name, key in zip(tab_names, tab_keys):
@@ -61,7 +61,7 @@ class KeyboardView(ctk.CTkToplevel):
             btn.pack(side="left", padx=5)
             self.tabs[key] = btn
         
-        # Create keyboard buttons frame
+        # Crear marco de botones del teclado
         self.keyboard_frame = ctk.CTkScrollableFrame(
             self.main_frame,
             label_text="",
@@ -69,11 +69,11 @@ class KeyboardView(ctk.CTkToplevel):
         )
         self.keyboard_frame.pack(fill="both", expand=True)
         
-        # Show initial tab
+        # Mostrar pestaña inicial
         self.show_keyboard("basic")
     
     def switch_tab(self, tab_key):
-        """Switch to a different keyboard tab."""
+        """Cambiar a una pestaña diferente del teclado."""
         for key, btn in self.tabs.items():
             if key == tab_key:
                 btn.configure(fg_color=("#3B8ED5", "#1F6AA5"))
@@ -84,7 +84,7 @@ class KeyboardView(ctk.CTkToplevel):
         self.show_keyboard(tab_key)
     
     def show_keyboard(self, tab_key):
-        """Show the keyboard for the specified tab."""
+        """Mostrar el teclado de la pestaña especificada."""
         for widget in self.keyboard_frame.winfo_children():
             widget.destroy()
         
@@ -100,7 +100,7 @@ class KeyboardView(ctk.CTkToplevel):
             self.create_avanzado_keyboard()
     
     def insert_text(self, text):
-        """Insert text into the input widget."""
+        """Insertar texto en el campo de entrada."""
         if self.input_widget:
             try:
                 self.input_widget.insert("end", text)
@@ -111,7 +111,7 @@ class KeyboardView(ctk.CTkToplevel):
             self.callback(text)
     
     def create_button(self, parent, text, insert_text, width=60, height=40):
-        """Create a keyboard button."""
+        """Crear un botón del teclado."""
         btn = ctk.CTkButton(
             parent,
             text=text,
@@ -127,7 +127,7 @@ class KeyboardView(ctk.CTkToplevel):
         return btn
     
     def create_basic_keyboard(self):
-        """Create BASIC tab keyboard."""
+        """Crear teclado de la pestaña BÁSICO."""
         numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -171,7 +171,7 @@ class KeyboardView(ctk.CTkToplevel):
         btn.pack(side="left", padx=2)
     
     def create_funciones_keyboard(self):
-        """Create FUNCIONES tab keyboard."""
+        """Crear teclado de la pestaña FUNCIONES."""
         funcs1 = [("ln", "log("), ("log", "log10("), ("exp", "exp(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -201,7 +201,7 @@ class KeyboardView(ctk.CTkToplevel):
         btn.pack(side="left", padx=3)
     
     def create_trig_keyboard(self):
-        """Create TRIGONOMETRÍA tab keyboard."""
+        """Crear teclado de la pestaña TRIGONOMETRÍA."""
         trig1 = [("sin", "sin("), ("cos", "cos("), ("tan", "tan(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -231,7 +231,7 @@ class KeyboardView(ctk.CTkToplevel):
             btn.pack(side="left", padx=3)
     
     def create_constantes_keyboard(self):
-        """Create CONSTANTES tab keyboard."""
+        """Crear teclado de la pestaña CONSTANTES."""
         const1 = [("π", "pi"), ("e", "E"), ("∞", "inf")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -252,7 +252,7 @@ class KeyboardView(ctk.CTkToplevel):
         btn.pack(side="left", padx=3)
     
     def create_avanzado_keyboard(self):
-        """Create AVANZADO tab keyboard."""
+        """Crear teclado de la pestaña AVANZADO."""
         ops = [("Σ", "sum("), ("∏", "prod("), ("∫", "integrate(")]
         row = ctk.CTkFrame(self.keyboard_frame, fg_color="transparent")
         row.pack(fill="x", pady=2)
@@ -283,7 +283,7 @@ class KeyboardView(ctk.CTkToplevel):
         btn.pack(side="left", padx=3)
     
     def clear_input(self):
-        """Clear the input widget."""
+        """Limpiar el campo de entrada."""
         if self.input_widget:
             try:
                 self.input_widget.delete("0.0", "end")

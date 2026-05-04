@@ -1,4 +1,4 @@
-"""Gaussian Quadrature (2-point Gauss-Legendre)."""
+"""Cuadratura de Gauss (Gauss-Legendre de 2 puntos)."""
 
 from typing import Callable
 
