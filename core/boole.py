@@ -1,4 +1,4 @@
-"""Boole's Rule integration method."""
+"""Método de integración de la regla de Boole."""
 
 from typing import Callable
 
@@ -6,7 +6,7 @@ Function = Callable[[float], float]
 
 def boole(f: Function, a: float, b: float, n: int) -> float:
     if n < 4 or n % 4 != 0:
-        raise ValueError("n must be a positive multiple of 4 for Boole's rule.")
+        raise ValueError("n debe ser un múltiplo positivo de 4 para la regla de Boole.")
 
     h = (b - a) / n
     boole_coefficients = [7, 32, 12, 32, 7]

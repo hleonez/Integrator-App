@@ -1,4 +1,4 @@
-"""Trapezoidal Rule integration method."""
+"""Método de integración trapezoidal."""
 
 from typing import Callable
 
@@ -9,7 +9,7 @@ Function = Callable[[float], float]
 def trapezoidal(f: Function, a: float, b: float, n: int) -> float:
     
     if n < 1:
-        raise ValueError("n must be at least 1.")
+        raise ValueError("n debe ser al menos 1.")
 
     h = (b - a) / n
     interior_sum = sum(f(a + i * h) for i in range(1, n))

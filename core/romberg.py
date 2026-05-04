@@ -1,4 +1,4 @@
-"""Romberg Integration method."""
+"""Método de integración de Romberg."""
 
 from typing import Callable
 
@@ -6,7 +6,7 @@ Function = Callable[[float], float]
 
 def romberg(f: Function, a: float, b: float, max_iter: int = 5) -> float:
     if max_iter < 1:
-        raise ValueError("max_iter must be at least 1.")
+        raise ValueError("max_iter debe ser al menos 1.")
 
     R = [[0.0] * (max_iter + 1) for _ in range(max_iter + 1)]
 

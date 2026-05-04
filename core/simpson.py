@@ -1,4 +1,4 @@
-"""Simpson's Rule integration method."""
+"""Método de integración de Simpson."""
 
 from typing import Callable
 
@@ -7,7 +7,7 @@ Function = Callable[[float], float]
 
 def simpson(f: Function, a: float, b: float, n: int) -> float:
     if n < 2 or n % 2 != 0:
-        raise ValueError("n must be a positive even integer for Simpson's rule.")
+        raise ValueError("n debe ser un entero par positivo para la regla de Simpson.")
 
     h = (b - a) / n
     nodes = [f(a + i * h) for i in range(n + 1)]

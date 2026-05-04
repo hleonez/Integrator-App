@@ -3,7 +3,7 @@
 Provides a single view where the user can:
   - Type a mathematical function of x.
   - Set the integration interval [a, b] and number of subintervals n.
-  - Choose between Riemann, Trapezoidal, Simpson, or Boole.
+  - Choose between Riemann, Trapezoidal, Simpson, Boole, Midpoint, Gauss, or Romberg.
   - See the numerical result immediately.
 """
 
@@ -31,36 +31,43 @@ METHODS = {
         "function": riemann,
         "n_constraint": "cualquier entero ≥ 1",
         "n_default": "100",
+        "uses_n": True,
     },
     "Regla Trapezoidal": {
         "function": trapezoidal,
         "n_constraint": "cualquier entero ≥ 1",
         "n_default": "100",
+        "uses_n": True,
     },
     "Regla de Simpson 1/3": {
         "function": simpson,
         "n_constraint": "entero par ≥ 2",
         "n_default": "100",
+        "uses_n": True,
     },
     "Regla de Boole": {
         "function": boole,
         "n_constraint": "múltiplo de 4 ≥ 4",
         "n_default": "100",
+        "uses_n": True,
     },
     "Método de Punto Medio": {
         "function": midpoint,
         "n_constraint": "cualquier entero ≥ 1",
         "n_default": "100",
+        "uses_n": True,
     },
     "Cuadratura de Gauss (2 puntos)": {
         "function": gauss_quadrature_2,
         "n_constraint": "no aplica",
         "n_default": "- - -",
+        "uses_n": False,
     },
     "Método de Romberg": {
         "function": romberg,
         "n_constraint": "ITERACIONES ≥ 1",
         "n_default": "5",
+        "uses_n": True,
     },
 }
 
@@ -173,15 +180,28 @@ class IntegrationView(BaseView):
         self.params_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.params_frame.place(relx=0.08, rely=0.60, anchor="w", relwidth=0.84)
 
-        for label_text, placeholder in [("a (límite inferior)", "0"), ("b (límite superior)", "1"), ("n (subdivisiones)", "100")]:
+        for label_text, placeholder in [
+            ("a (límite inferior)", "0"),
+            ("b (límite superior)", "1"),
+            ("n (subdivisiones)", "100"),
+        ]:
             col = ctk.CTkFrame(self.params_frame, fg_color="transparent")
             col.pack(side="left", expand=True, fill="x", padx=(0, 12))
 
-            ctk.CTkLabel(col, text=label_text, font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w")
-            entry = ctk.CTkEntry(col, placeholder_text=placeholder, height=40, font=ctk.CTkFont(size=14, family="Consolas"))
+            ctk.CTkLabel(
+                col,
+                text=label_text,
+                font=ctk.CTkFont(size=13, weight="bold"),
+            ).pack(anchor="w")
+
+            entry = ctk.CTkEntry(
+                col,
+                placeholder_text=placeholder,
+                height=40,
+                font=ctk.CTkFont(size=14, family="Consolas"),
+            )
             entry.pack(fill="x")
 
-            # Keep references
             if "inferior" in label_text:
                 self.a_entry = entry
             elif "superior" in label_text:
@@ -193,7 +213,7 @@ class IntegrationView(BaseView):
         """Primary action buttons: Calculate and Graph."""
         self.buttons_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.buttons_frame.place(relx=0.5, rely=0.75, anchor="center")
-        
+
         self.calculate_button = ctk.CTkButton(
             self.buttons_frame,
             text="Calcular Integral",
@@ -238,19 +258,21 @@ class IntegrationView(BaseView):
     # ------------------------------------------------------------------
 
     def _on_method_changed(self, selected_method: str) -> None:
-        """Update the n-constraint hint when the user picks a different method."""
-        constraint = METHODS[selected_method]["n_constraint"]
-        self.constraint_label.configure(text=f"n: {constraint}")
-        
-        if selected_method == "Cuadratura de Gauss (2 puntos)":
+        """Update the n-constraint hint and enable/disable n field based on method."""
+        method_config = METHODS[selected_method]
+        self.constraint_label.configure(text=f"n: {method_config['n_constraint']}")
+
+        if not method_config["uses_n"]:
+            self.n_entry.configure(state="normal")
             self.n_entry.delete(0, "end")
             self.n_entry.insert(0, "- - -")
             self.n_entry.configure(state="disabled")
         else:
             self.n_entry.configure(state="normal")
-            if self.n_entry.get() == "- - -":
+            current = self.n_entry.get()
+            if current == "- - -":
                 self.n_entry.delete(0, "end")
-                self.n_entry.insert(0, METHODS[selected_method]["n_default"])
+                self.n_entry.insert(0, method_config["n_default"])
 
     def _open_keyboard(self) -> None:
         """Open the virtual math keyboard targeting the function entry."""
@@ -267,15 +289,14 @@ class IntegrationView(BaseView):
             if a >= b:
                 raise ValueError("El límite inferior a debe ser menor que b.")
 
-            method_name = self.method_var.get()
-            method_config = METHODS[method_name]
+            method_config = METHODS[self.method_var.get()]
             integrate = method_config["function"]
-            
-            if method_name == "Cuadratura de Gauss (2 puntos)":
-                result = integrate(f, a, b)
-            else:
+
+            if method_config["uses_n"]:
                 n = self._parse_int(self.n_entry.get().strip(), "n")
                 result = integrate(f, a, b, n)
+            else:
+                result = integrate(f, a, b)
 
             self._show_result(result)
 
